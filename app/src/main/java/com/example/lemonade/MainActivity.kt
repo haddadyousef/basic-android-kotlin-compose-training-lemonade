@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2023 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.example.lemonade
 
 import android.os.Bundle
@@ -72,8 +56,8 @@ class MainActivity : ComponentActivity() {
 fun LemonadeApp() {
 
     var currentStep by remember { mutableStateOf(1) }
-
     var squeezeCount by remember { mutableStateOf(0) }
+    var isNextButtonEnabled by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -99,47 +83,66 @@ fun LemonadeApp() {
         ) {
             when (currentStep) {
                 1 -> {
-                    LemonTextAndImage(
+                    LemonTextAndImageWithNextButton(
                         textLabelResourceId = R.string.lemon_select,
                         drawableResourceId = R.drawable.lemon_tree,
                         contentDescriptionResourceId = R.string.lemon_tree_content_description,
                         onImageClick = {
-                            currentStep = 2
+                            isNextButtonEnabled = true
                             squeezeCount = (2..4).random()
+                        },
+                        isNextButtonEnabled = isNextButtonEnabled,
+                        onNextButtonClick = {
+                            currentStep = 2
+                            isNextButtonEnabled = false
                         }
                     )
                 }
                 2 -> {
-                    LemonTextAndImage(
+                    LemonTextAndImageWithNextButton(
                         textLabelResourceId = R.string.lemon_squeeze,
                         drawableResourceId = R.drawable.lemon_squeeze,
                         contentDescriptionResourceId = R.string.lemon_content_description,
                         onImageClick = {
                             squeezeCount--
                             if (squeezeCount == 0) {
-                                currentStep = 3
+                                isNextButtonEnabled = true
                             }
+                        },
+                        isNextButtonEnabled = isNextButtonEnabled,
+                        onNextButtonClick = {
+                            currentStep = 3
+                            isNextButtonEnabled = false
                         }
                     )
                 }
-
                 3 -> {
-                    LemonTextAndImage(
+                    LemonTextAndImageWithNextButton(
                         textLabelResourceId = R.string.lemon_drink,
                         drawableResourceId = R.drawable.lemon_drink,
                         contentDescriptionResourceId = R.string.lemonade_content_description,
                         onImageClick = {
+                            isNextButtonEnabled = true
+                        },
+                        isNextButtonEnabled = isNextButtonEnabled,
+                        onNextButtonClick = {
                             currentStep = 4
+                            isNextButtonEnabled = false
                         }
                     )
                 }
                 4 -> {
-                    LemonTextAndImage(
+                    LemonTextAndImageWithNextButton(
                         textLabelResourceId = R.string.lemon_empty_glass,
                         drawableResourceId = R.drawable.lemon_restart,
                         contentDescriptionResourceId = R.string.empty_glass_content_description,
                         onImageClick = {
+                            isNextButtonEnabled = true
+                        },
+                        isNextButtonEnabled = isNextButtonEnabled,
+                        onNextButtonClick = {
                             currentStep = 1
+                            isNextButtonEnabled = false
                         }
                     )
                 }
@@ -149,11 +152,13 @@ fun LemonadeApp() {
 }
 
 @Composable
-fun LemonTextAndImage(
+fun LemonTextAndImageWithNextButton(
     textLabelResourceId: Int,
     drawableResourceId: Int,
     contentDescriptionResourceId: Int,
     onImageClick: () -> Unit,
+    isNextButtonEnabled: Boolean,
+    onNextButtonClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -183,6 +188,17 @@ fun LemonTextAndImage(
                 text = stringResource(textLabelResourceId),
                 style = MaterialTheme.typography.bodyLarge
             )
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_vertical)))
+            Button(
+                onClick = onNextButtonClick,
+                enabled = isNextButtonEnabled,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                )
+            ) {
+                Text(text = "Next")
+            }
         }
     }
 }
@@ -190,7 +206,7 @@ fun LemonTextAndImage(
 @Preview
 @Composable
 fun LemonPreview() {
-    AppTheme() {
+    AppTheme {
         LemonadeApp()
     }
 }
